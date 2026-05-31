@@ -38,7 +38,7 @@ class PipelineStack(Stack):
                     "pip install -r requirements.txt",
                 ],
                 commands=[
-                    "npm cdk synth",
+                    "npx cdk synth",
                 ],
             ),
         )
@@ -77,4 +77,7 @@ class PipelineStack(Stack):
                 env_name="prod",
                 env={"account": prod_config.account, "region": prod_config.region},
             ),
+            pre=[
+                pipelines.ManualApprovalStep("PromoteToProd"),
+            ],
         )

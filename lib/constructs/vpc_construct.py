@@ -15,7 +15,7 @@ class VpcConstruct(Construct):
             self,
             "Vpc",
             ip_addresses=ec2.IpAddresses.cidr(config.vpc_cidr),
-            max_azs=len(config.azs),
+            availability_zones=config.azs,
             nat_gateways=nat_gateways,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
