@@ -1,0 +1,7 @@
+dynamodb:
+  table:
+    name: atlas-platform-gamma-items
+
+spring:
+  profiles:
+    active: gamma

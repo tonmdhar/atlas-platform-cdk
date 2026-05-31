@@ -1,0 +1,7 @@
+dynamodb:
+  table:
+    name: atlas-platform-beta-items
+
+spring:
+  profiles:
+    active: beta

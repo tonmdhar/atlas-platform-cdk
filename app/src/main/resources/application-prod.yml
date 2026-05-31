@@ -1,0 +1,7 @@
+dynamodb:
+  table:
+    name: atlas-platform-prod-items
+
+spring:
+  profiles:
+    active: prod
