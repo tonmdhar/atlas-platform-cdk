@@ -5,7 +5,6 @@ from aws_cdk import (
     pipelines,
 )
 
-from app import env_name
 from lib.config.environments import ENVIRONMENTS
 from lib.stages.atlas_stage import AtlasStage
 
@@ -37,6 +36,9 @@ class PipelineStack(Stack):
                 input=source,
                 install_commands=[
                     "pip install -r requirements.txt",
+                ],
+                commands=[
+                    "npm cdk synth",
                 ],
             ),
         )

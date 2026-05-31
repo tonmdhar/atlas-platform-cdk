@@ -2,21 +2,18 @@
 import aws_cdk as cdk
 
 from lib.config.environments import ENVIRONMENTS
-from lib.stacks.infra_stack import InfraStack
+from lib.stacks.pipeline_stack import PipelineStack
 
 app = cdk.App()
 
-env_name = app.node.try_get_context("env") or "beta"
-config = ENVIRONMENTS[env_name]
+pipeline_env = ENVIRONMENTS["beta"]
 
-InfraStack(
+PipelineStack(
     app,
-    f"AtlasPlatform-{env_name.capitalize()}-Infra",
-    config=config,
-    env_name=env_name,
+    "AtlasPlatform-Pipeline",
     env=cdk.Environment(
-        account=config.account,
-        region=config.region,
+        account=pipeline_env.account,
+        region=pipeline_env.region,
     )
 )
 
