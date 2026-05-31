@@ -1,0 +1,50 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo "Running smoke tests for $ENV_NAME environment..."
+      - echo "Service URL: $SERVICE_URL"
+
+      - echo "Test 1: Health check endpoint"
+      - HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL/actuator/health)
+      - |
+        if [ "$HEALTH_RESPONSE" != "200" ]; then
+          echo "Health check failed with status $HEALTH_RESPONSE"
+          exit 1
+        fi
+      - echo "Health check passed"
+
+      - echo "Test 2: API info endpoint"
+      - INFO_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL/api/info)
+      - |
+        if [ "$INFO_RESPONSE" != "200" ]; then
+          echo "Info endpoint check failed with status $INFO_RESPONSE"
+          exit 1
+        fi
+      - echo "Info endpoint check passed"
+
+      - echo "Test 3: Verify pod count"
+      - aws eks update-kubeconfig --region us-east-1 --name atlas-eks-$ENV_NAME
+      - POD_COUNT=$(kubectl get pods -n atlas -l app=atlas-platform --field-selector=status.phase=Running --no-headers | wc -l)
+      - |
+        if [ "$POD_COUNT" -lt 2 ]; then
+          echo "Pod count check failed: expected at least 2 running pods, found $POD_COUNT"
+          kubectl get pods -n atlas -l app=atlas-platform
+          exit 1
+        fi
+      - echo "Pod count check passed: $POD_COUNT running pods"
+
+      - echo "Test 4: Check for CrashLoopBackOff"
+      - CRASH_PODS=$(kubectl get pods -n atlas -l app=atlas-platform -o jsonpath='{.items[?(@.status.containerStatuses[0].state.waiting.reason=="CrashLoopBackOff")].metadata.name}')
+      - |
+        if [ ! -z "$CRASH_PODS" ]; then
+          echo "Found pods in CrashLoopBackOff: $CRASH_PODS"
+          kubectl describe pods -n atlas -l app=atlas-platform
+          exit 1
+        fi
+      - echo "No pods in CrashLoopBackOff"
+
+  post_build:
+    commands:
+      - echo "Smoke tests completed successfully on $(date)"

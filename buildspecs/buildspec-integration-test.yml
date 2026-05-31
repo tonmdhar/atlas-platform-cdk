@@ -1,0 +1,97 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo "Running integration tests for $ENV_NAME environment..."
+      - echo "Service URL: $SERVICE_URL"
+
+      - echo "Test 1: Full CRUD operations"
+      - echo "Creating item..."
+      - CREATE_RESPONSE=$(curl -s -X POST $SERVICE_URL/api/items -H "Content-Type: application/json" -d '{"name":"test-item","description":"Integration test item"}')
+      - echo "Create response: $CREATE_RESPONSE"
+      - ITEM_ID=$(echo $CREATE_RESPONSE | jq -r '.id')
+      - |
+        if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" == "null" ]; then
+          echo "Failed to create item"
+          exit 1
+        fi
+      - echo "Created item with ID: $ITEM_ID"
+
+      - echo "Reading item..."
+      - READ_RESPONSE=$(curl -s $SERVICE_URL/api/items/$ITEM_ID)
+      - echo "Read response: $READ_RESPONSE"
+      - READ_NAME=$(echo $READ_RESPONSE | jq -r '.name')
+      - |
+        if [ "$READ_NAME" != "test-item" ]; then
+          echo "Failed to read item correctly"
+          exit 1
+        fi
+      - echo "Item read successfully"
+
+      - echo "Updating item..."
+      - UPDATE_RESPONSE=$(curl -s -X PUT $SERVICE_URL/api/items/$ITEM_ID -H "Content-Type: application/json" -d '{"name":"test-item-updated","description":"Updated description"}')
+      - echo "Update response: $UPDATE_RESPONSE"
+      - UPDATED_NAME=$(echo $UPDATE_RESPONSE | jq -r '.name')
+      - |
+        if [ "$UPDATED_NAME" != "test-item-updated" ]; then
+          echo "Failed to update item"
+          exit 1
+        fi
+      - echo "Item updated successfully"
+
+      - echo "Listing items..."
+      - LIST_RESPONSE=$(curl -s $SERVICE_URL/api/items)
+      - echo "List response: $LIST_RESPONSE"
+      - ITEM_COUNT=$(echo $LIST_RESPONSE | jq '. | length')
+      - |
+        if [ "$ITEM_COUNT" -lt 1 ]; then
+          echo "Failed to list items"
+          exit 1
+        fi
+      - echo "Found $ITEM_COUNT items"
+
+      - echo "Deleting item..."
+      - DELETE_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE $SERVICE_URL/api/items/$ITEM_ID)
+      - |
+        if [ "$DELETE_RESPONSE" != "204" ] && [ "$DELETE_RESPONSE" != "200" ]; then
+          echo "Failed to delete item with status $DELETE_RESPONSE"
+          exit 1
+        fi
+      - echo "Item deleted successfully"
+
+      - echo "Test 2: Error handling"
+      - echo "Checking 404 for non-existent item..."
+      - NOT_FOUND_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL/api/items/non-existent-id)
+      - |
+        if [ "$NOT_FOUND_RESPONSE" != "404" ]; then
+          echo "Expected 404 for non-existent item, got $NOT_FOUND_RESPONSE"
+          exit 1
+        fi
+      - echo "Error handling test passed"
+
+      - echo "Test 3: Basic load test"
+      - echo "Creating 10 items concurrently..."
+      - |
+        for i in {1..10}; do
+          curl -s -X POST $SERVICE_URL/api/items \
+            -H "Content-Type: application/json" \
+            -d "{\"name\":\"load-test-item-$i\",\"description\":\"Load test\"}" &
+        done
+        wait
+      - echo "Load test completed"
+
+      - echo "Verifying created items..."
+      - sleep 2
+      - FINAL_LIST=$(curl -s $SERVICE_URL/api/items)
+      - FINAL_COUNT=$(echo $FINAL_LIST | jq '. | length')
+      - |
+        if [ "$FINAL_COUNT" -lt 10 ]; then
+          echo "Load test verification failed: expected at least 10 items, found $FINAL_COUNT"
+          exit 1
+        fi
+      - echo "Load test verification passed: $FINAL_COUNT items found"
+
+  post_build:
+    commands:
+      - echo "Integration tests completed successfully on $(date)"

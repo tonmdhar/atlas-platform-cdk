@@ -1,0 +1,37 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing kubectl..."
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/
+      - kubectl version --client
+
+  pre_build:
+    commands:
+      - echo "Updating kubeconfig..."
+      - aws eks update-kubeconfig --region us-east-1 --name $CLUSTER_NAME
+      - kubectl get nodes
+      - echo "Current context:"
+      - kubectl config current-context
+
+  build:
+    commands:
+      - echo "Deploying to $ENV_NAME environment..."
+      - cd k8s/overlays/$ENV_NAME
+      - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:-latest}
+      - REPOSITORY_URI=733508956784.dkr.ecr.us-east-1.amazonaws.com/atlas-platform-$ENV_NAME
+      - echo "Setting image to $REPOSITORY_URI:$IMAGE_TAG"
+      - kustomize edit set image atlas-platform=$REPOSITORY_URI:$IMAGE_TAG
+      - echo "Applying Kubernetes manifests..."
+      - kubectl apply -k .
+      - echo "Waiting for rollout to complete..."
+      - kubectl rollout status deployment/atlas-platform -n atlas --timeout=5m
+
+  post_build:
+    commands:
+      - echo "Deployment completed on $(date)"
+      - kubectl get pods -n atlas -l app=atlas-platform
+      - kubectl get svc -n atlas atlas-platform
