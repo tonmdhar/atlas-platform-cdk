@@ -1,7 +1,7 @@
 from constructs import Construct
 from aws_cdk import (
     Stack,
-    aws_codepipeline_actions as cpactions,
+    aws_iam as iam,
     pipelines,
 )
 
@@ -31,6 +31,14 @@ class PipelineStack(Stack):
             self,
             "Pipeline",
             pipeline_name="AtlasPlatform-Pipeline",
+            synth_code_build_defaults=pipelines.CodeBuildOptions(
+                role_policy=[
+                    iam.PolicyStatement(
+                        actions=["ec2:DescribeAvailabilityZones"],
+                        resources=["*"],
+                    ),
+                ],
+            ),
             synth=pipelines.ShellStep(
                 "Synth",
                 input=source,
