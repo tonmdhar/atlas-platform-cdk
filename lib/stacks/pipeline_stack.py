@@ -23,7 +23,7 @@ class PipelineStack(Stack):
             "tonmdhar/atlas-platform-cdk",
             "main",
             connection_arn=
-                "arn:aws:codeconnections:us-east-1:733508956784:connection/0d9170d0-ca8a-4437-b010-a2c54bd0c04e",
+                "arn:aws:codeconnections:us-east-1:733508956784:connection/4baa5052-881b-4c4b-8b46-22d0bd0ad19a",
         )
 
         # Self-mutating pipeline
