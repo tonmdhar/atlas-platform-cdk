@@ -10,6 +10,7 @@ from lib.constructs.ecr_construct import EcrConstruct
 from lib.constructs.secrets_construct import SecretsConstruct
 from lib.constructs.monitoring_construct import MonitoringConstruct
 
+
 class InfraStack(Stack):
     def __init__(
             self,
@@ -24,10 +25,17 @@ class InfraStack(Stack):
         self.vpc = VpcConstruct(self, "Vpc", config=config)
         self.eks = EksConstruct(self, "Eks", config=config, vpc=self.vpc.vpc)
         self.dynamodb = DynamoDbConstruct(self, "DynamoDb", env_name=env_name, vpc=self.vpc.vpc)
-        self.irsa = IrsaConstruct(self, "Irsa", self.eks.cluster, self.dynamodb.table)
-        self.irsa.node.add_dependency(self.eks.namespace)
-
+        self.irsa = IrsaConstruct(
+            self, "Irsa",
+            cluster=self.eks.cluster,
+            table=self.dynamodb.table,
+            namespace_manifest=self.eks.namespace,
+        )
         self.ecr = EcrConstruct(self, "Ecr", env_name=env_name)
-        self.secrets = SecretsConstruct(self, "Secrets", env_name=env_name, cluster=self.eks.cluster)
-        self.secrets.node.add_dependency(self.eks.namespace)
+        self.secrets = SecretsConstruct(
+            self, "Secrets",
+            env_name=env_name,
+            cluster=self.eks.cluster,
+            namespace_manifest=self.eks.namespace,
+        )
         self.monitoring = MonitoringConstruct(self, "Monitoring", env_name=env_name, cluster=self.eks.cluster)

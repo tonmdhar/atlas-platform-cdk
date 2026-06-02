@@ -5,6 +5,7 @@ from aws_cdk import (
     RemovalPolicy,
 )
 
+
 class SecretsConstruct(Construct):
 
     def __init__(
@@ -12,11 +13,11 @@ class SecretsConstruct(Construct):
             scope: Construct,
             id: str,
             env_name: str,
-            cluster: eks.Cluster
+            cluster: eks.Cluster,
+            namespace_manifest,
     ) -> None:
         super().__init__(scope, id)
 
-        # Create a secret for the application (DB credentials, API keys, etc.)
         self.app_secret = secretsmanager.Secret(
             self,
             "AppSecret",
@@ -25,11 +26,11 @@ class SecretsConstruct(Construct):
             removal_policy=RemovalPolicy.DESTROY if env_name != "prod" else RemovalPolicy.RETAIN,
         )
 
-        # ServiceAccount with Secrets Manager read access
         self.service_account = cluster.add_service_account(
             "SecretsServiceAccount",
             name="atlas-secrets-sa",
-            namespace="atlas"
+            namespace="atlas",
         )
+        self.service_account.node.add_dependency(namespace_manifest)
 
         self.app_secret.grant_read(self.service_account)
