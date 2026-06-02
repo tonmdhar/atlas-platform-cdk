@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_eks as eks,
     aws_ec2 as ec2,
     aws_iam as iam,
+    Size,
 )
 
 from lib.config.environments import EnvironmentConfig
@@ -25,7 +26,8 @@ class EksConstruct(Construct):
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS)],
             endpoint_access=eks.EndpointAccess.PRIVATE,
             default_capacity=0,
-            authentication_mode=eks.AuthenticationMode.API_AND_CONFIG_MAP
+            authentication_mode=eks.AuthenticationMode.API_AND_CONFIG_MAP,
+            kubectl_memory=Size.mebibytes(512),
         )
 
         self.nodegroup = self.cluster.add_nodegroup_capacity(
