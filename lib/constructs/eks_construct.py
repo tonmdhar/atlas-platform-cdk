@@ -33,9 +33,11 @@ class EksConstruct(Construct):
         # Create the atlas namespace (must exist before ServiceAccounts)
         self.namespace = self.cluster.add_manifest(
             "AtlasNamespace",
-            api_version="v1",
-            kind="Namespace",
-            metadata={"name": "atlas"},
+            {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {"name": "atlas"},
+            },
         )
 
         self.nodegroup = self.cluster.add_nodegroup_capacity(
