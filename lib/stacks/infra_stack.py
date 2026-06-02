@@ -25,6 +25,9 @@ class InfraStack(Stack):
         self.eks = EksConstruct(self, "Eks", config=config, vpc=self.vpc.vpc)
         self.dynamodb = DynamoDbConstruct(self, "DynamoDb", env_name=env_name, vpc=self.vpc.vpc)
         self.irsa = IrsaConstruct(self, "Irsa", self.eks.cluster, self.dynamodb.table)
+        self.irsa.node.add_dependency(self.eks.namespace)
+
         self.ecr = EcrConstruct(self, "Ecr", env_name=env_name)
         self.secrets = SecretsConstruct(self, "Secrets", env_name=env_name, cluster=self.eks.cluster)
+        self.secrets.node.add_dependency(self.eks.namespace)
         self.monitoring = MonitoringConstruct(self, "Monitoring", env_name=env_name, cluster=self.eks.cluster)

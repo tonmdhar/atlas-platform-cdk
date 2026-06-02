@@ -30,6 +30,14 @@ class EksConstruct(Construct):
             kubectl_memory=Size.mebibytes(512),
         )
 
+        # Create the atlas namespace (must exist before ServiceAccounts)
+        self.namespace = self.cluster.add_manifest(
+            "AtlasNamespace",
+            api_version="v1",
+            kind="Namespace",
+            metadata={"name": "atlas"},
+        )
+
         self.nodegroup = self.cluster.add_nodegroup_capacity(
             "ManagedNodeGroup",
             instance_types=[ec2.InstanceType(it) for it in config.node_instance_types],
