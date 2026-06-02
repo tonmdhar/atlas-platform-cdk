@@ -18,7 +18,7 @@ class EnvironmentConfig:
 
 ENVIRONMENTS: dict[str, EnvironmentConfig] = {
     "beta": EnvironmentConfig(
-        account="733508956784",
+        account="619759452722",
         region="us-east-1",
         vpc_cidr="10.10.0.0/16",
         azs=["us-east-1a", "us-east-1b"],
@@ -32,7 +32,7 @@ ENVIRONMENTS: dict[str, EnvironmentConfig] = {
         cluster_name="atlas-platform-beta",
     ),
     "gamma": EnvironmentConfig(
-        account="733508956784",
+        account="619759452722",
         region="us-east-1",
         vpc_cidr="10.20.0.0/16",
         azs=["us-east-1a", "us-east-1b"],
@@ -46,7 +46,7 @@ ENVIRONMENTS: dict[str, EnvironmentConfig] = {
         cluster_name="atlas-platform-gamma",
     ),
     "prod": EnvironmentConfig(
-        account="733508956784",
+        account="619759452722",
         region="us-east-1",
         vpc_cidr="10.30.0.0/16",
         azs=["us-east-1a", "us-east-1b", "us-east-1c"],

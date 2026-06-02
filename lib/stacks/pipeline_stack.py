@@ -22,8 +22,7 @@ class PipelineStack(Stack):
         source = pipelines.CodePipelineSource.connection(
             "tonmdhar/atlas-platform-cdk",
             "main",
-            connection_arn=
-                "arn:aws:codeconnections:us-east-1:733508956784:connection/4baa5052-881b-4c4b-8b46-22d0bd0ad19a",
+            connection_arn="arn:aws:codeconnections:eu-north-1:619759452722:connection/051d1dcf-f761-4d7e-a1e1-8409f7301ef7",
         )
 
         # Self-mutating pipeline
